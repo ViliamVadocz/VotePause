@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using HarmonyLib;
 
 namespace VotePause;
 
@@ -10,10 +11,17 @@ public class Plugin : BasePlugin
 {
     internal static new ManualLogSource Log;
 
+    private readonly Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
+
     public override void Load()
     {
-        // Plugin startup logic
         Log = base.Log;
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+        harmony.PatchAll();
+        Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} patched these methods:");
+        foreach (var method in Harmony.GetAllPatchedMethods())
+        {
+            if (method.DeclaringType != null) Log.LogInfo($" - {method.DeclaringType.FullName}.{method.Name}");
+        }
     }
 }
