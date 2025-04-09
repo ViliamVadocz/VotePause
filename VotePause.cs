@@ -65,7 +65,7 @@ public class VotePause
                         Plugin.Log.LogDebug($"Vote to pause in progress. [{pauseVotes.Count}/{needed}]");
                         uiChat.Server_SendSystemChatMessage(
                             $"<color=orange><b>VotePause</b></color> Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed})."
-                            + "Use <b>/votepause</b> or <b>/vp</b> to vote."
+                            + " Use <b>/votepause</b> or <b>/vp</b> to vote."
                         );
                     }
                     break;
@@ -88,7 +88,7 @@ public class VotePause
                         Plugin.Log.LogDebug($"Vote to resume in progress. [{resumeVotes.Count}/{needed}]");
                         uiChat.Server_SendSystemChatMessage(
                             $"<color=orange><b>VotePause</b></color> Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed})."
-                            + "Use <b>/voteresume</b> or <b>/vr</b> to vote."
+                            + " Use <b>/voteresume</b> or <b>/vr</b> to vote."
                         );
                     }
                     break;
