@@ -19,7 +19,7 @@ public class Plugin : BasePlugin
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
         harmony.PatchAll();
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} patched these methods:");
-        foreach (var method in Harmony.GetAllPatchedMethods())
+        foreach (var method in harmony.GetPatchedMethods())
         {
             if (method.DeclaringType != null) Log.LogInfo($" - {method.DeclaringType.FullName}.{method.Name}");
         }
