@@ -8,6 +8,11 @@ namespace VotePause;
 
 public class VotePause
 {
+    const string messagePrefix = "<color=orange><b>VotePause</b></color>";
+    const string helpMessage = $"{messagePrefix} commands:\n"
+        + "* <b>/votepause</b> (/vp) - Vote to pause\n"
+        + "* <b>/voteresume</b> (/vr) - Vote to resume";
+
     private static Dictionary<ulong, DateTime> pauseVotes = [];
     private static Dictionary<ulong, DateTime> resumeVotes = [];
 
@@ -46,6 +51,9 @@ public class VotePause
 
             switch (command)
             {
+                case "/help":
+                    uiChat.Server_SendClientSystemChatMessage(helpMessage, clientId);
+                    break;
                 case "/votepause":
                 case "/vp":
                     Plugin.Log.LogDebug($"ClientID {clientId} voted to pause at {now}.");
@@ -56,7 +64,7 @@ public class VotePause
                     if (pauseVotes.Count >= needed)
                     {
                         Plugin.Log.LogDebug($"Vote to pause passed. [{pauseVotes.Count}/{needed}]");
-                        uiChat.Server_SendSystemChatMessage($"<color=orange><b>VotePause</b></color> Vote passed - pausing! ({pauseVotes.Count}/{needed})");
+                        uiChat.Server_SendSystemChatMessage($"{messagePrefix} Vote passed - pausing! ({pauseVotes.Count}/{needed})");
                         gameManager.Server_Pause();
                         pauseVotes.Clear();
                     }
@@ -64,7 +72,7 @@ public class VotePause
                     {
                         Plugin.Log.LogDebug($"Vote to pause in progress. [{pauseVotes.Count}/{needed}]");
                         uiChat.Server_SendSystemChatMessage(
-                            $"<color=orange><b>VotePause</b></color> Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed})."
+                            $"{messagePrefix} Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed})."
                             + " Use <b>/votepause</b> or <b>/vp</b> to vote."
                         );
                     }
@@ -79,7 +87,7 @@ public class VotePause
                     if (resumeVotes.Count >= needed)
                     {
                         Plugin.Log.LogDebug($"Vote to resume passed. [{resumeVotes.Count}/{needed}]");
-                        uiChat.Server_SendSystemChatMessage($"<color=orange><b>VotePause</b></color> Vote passed - resuming! ({resumeVotes.Count}/{needed})");
+                        uiChat.Server_SendSystemChatMessage($"{messagePrefix} Vote passed - resuming! ({resumeVotes.Count}/{needed})");
                         gameManager.Server_Resume();
                         resumeVotes.Clear();
                     }
@@ -87,7 +95,7 @@ public class VotePause
                     {
                         Plugin.Log.LogDebug($"Vote to resume in progress. [{resumeVotes.Count}/{needed}]");
                         uiChat.Server_SendSystemChatMessage(
-                            $"<color=orange><b>VotePause</b></color> Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed})."
+                            $"{messagePrefix} Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed})."
                             + " Use <b>/voteresume</b> or <b>/vr</b> to vote."
                         );
                     }
