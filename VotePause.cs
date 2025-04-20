@@ -52,7 +52,7 @@ public class VotePause
             switch (command)
             {
                 case "/help":
-                    uiChat.Server_SendClientSystemChatMessage(helpMessage, clientId);
+                    uiChat.Server_SendSystemChatMessage(helpMessage, clientId);
                     break;
                 case "/votepause":
                 case "/vp":
@@ -79,7 +79,7 @@ public class VotePause
                     else
                     {
                         Plugin.Log.LogDebug($"{clientId} tried to vote to pause but they already voted recently.");
-                        uiChat.Server_SendClientSystemChatMessage($"{messagePrefix} You already voted to <b>pause</b> recently.", clientId);
+                        uiChat.Server_SendSystemChatMessage($"{messagePrefix} You already voted to <b>pause</b> recently.", clientId);
                     }
                     break;
                 case "/voteresume":
@@ -108,7 +108,7 @@ public class VotePause
                     else
                     {
                         Plugin.Log.LogDebug($"{clientId} tried to vote to resume but they already voted recently.");
-                        uiChat.Server_SendClientSystemChatMessage($"{messagePrefix} You already voted to <b>resume</b> recently.", clientId);
+                        uiChat.Server_SendSystemChatMessage($"{messagePrefix} You already voted to <b>resume</b> recently.", clientId);
                     }
                     break;
                 default: return;
