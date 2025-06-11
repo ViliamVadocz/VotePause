@@ -8,6 +8,7 @@ Give every player the ability to call for a pause or to resume the game.
 
 ## Installation
 This is a server-side plugin, so the person running the server has to install it. The other people on the server don't have to do anything.
-See https://discord.com/channels/1338387546652016744/1344855245498486897 for how to install plugins on dedicated servers.
+
+The mod is available on the Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3497097214
 
 The latest release can be found here: https://github.com/ViliamVadocz/VotePause/releases
