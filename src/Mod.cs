@@ -17,8 +17,7 @@ public class Mod : IPuckMod
     {
         if (!IsDedicatedServer())
         {
-            LogWarn("This is a server-side mod. It does nothing on the client.");
-            return false;
+            LogWarn("This is a server-side mod. It will only work in practice on the client.");
         }
         harmony.PatchAll();
         LogPatchedMethods();
