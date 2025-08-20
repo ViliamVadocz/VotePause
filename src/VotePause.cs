@@ -80,7 +80,7 @@ public class VotePause
                     if (now.Subtract(lastPausePassed).Seconds <= DEBOUNCE_SECONDS)
                     {
                         Mod.LogDebug($"ClientID {clientId} tried pause, but we paused recently.");
-                        sendMessage(uiChat, $"A <b>pause</b> vote passed just now, try again in a couple seconds.", clientId);
+                        sendMessage(uiChat, $"A vote passed recently. Try again in a couple seconds.", clientId);
                         return;
                     }
                     pauseVotes = pauseVotes
@@ -91,7 +91,7 @@ public class VotePause
                     if (pauseVotes.Count >= needed)
                     {
                         Mod.LogDebug($"Vote to pause passed. [{pauseVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $"Vote passed - pausing! ({pauseVotes.Count}/{needed})");
+                        sendMessage(uiChat, $"Vote passed - <b>pausing</b>! ({pauseVotes.Count}/{needed})");
                         gameManager.Server_Pause();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
@@ -118,7 +118,7 @@ public class VotePause
                     if (now.Subtract(lastResumePassed).Seconds <= DEBOUNCE_SECONDS)
                     {
                         Mod.LogDebug($"ClientID {clientId} tried to resume, but we resumed recently.");
-                        sendMessage(uiChat, $"A <b>resume</b> vote passed just now, try again in a couple seconds.", clientId);
+                        sendMessage(uiChat, $"A vote passed recently. Try again in a couple seconds.", clientId);
                         return;
                     }
                     Mod.LogDebug($"ClientID {clientId} voted to resume at {now}.");
@@ -130,7 +130,7 @@ public class VotePause
                     if (resumeVotes.Count >= needed)
                     {
                         Mod.LogDebug($"Vote to resume passed. [{resumeVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $"Vote passed - resuming! ({resumeVotes.Count}/{needed})");
+                        sendMessage(uiChat, $"Vote passed - <b>resuming</b>! ({resumeVotes.Count}/{needed})");
                         gameManager.Server_Resume();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
