@@ -15,8 +15,11 @@ public class VotePause
 
 
     private const uint TIMEOUT_SECONDS = 60;
+    private const uint REMINDER_SECONDS = 3 * 60;
     private static Dictionary<ulong, DateTime> pauseVotes = [];
     private static Dictionary<ulong, DateTime> resumeVotes = [];
+    private static DateTime lastPauseVoteReminder = DateTime.MinValue;
+    private static DateTime lastResumeVoteReminder = DateTime.MinValue;
 
     private static uint PlayersNeeded(uint totalPlayers)
     {
@@ -85,10 +88,12 @@ public class VotePause
                     }
                     else if (!alreadyVotedPause)
                     {
-                        sendMessage(uiChat,
-                            $"Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed})."
-                            + " Use <b>/votepause</b> or <b>/vp</b> to vote."
-                        );
+                        sendMessage(uiChat, $"Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed}).");
+                        if (now.Subtract(lastPauseVoteReminder).Seconds > REMINDER_SECONDS)
+                        {
+                            lastPauseVoteReminder = now;
+                            sendMessage(uiChat, $"Use <b>/votepause</b> or <b>/vp</b> to vote.");
+                        }
                     }
                     else
                     {
@@ -114,10 +119,12 @@ public class VotePause
                     else if (!alreadyVotedResume)
                     {
                         Mod.LogDebug($"Vote to resume in progress. [{resumeVotes.Count}/{needed}]");
-                        sendMessage(uiChat,
-                            $"Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed})."
-                            + " Use <b>/voteresume</b> or <b>/vr</b> to vote."
-                        );
+                        sendMessage(uiChat, $"Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed}).");
+                        if (now.Subtract(lastResumeVoteReminder).Seconds > REMINDER_SECONDS)
+                        {
+                            lastResumeVoteReminder = now;
+                            sendMessage(uiChat, $"Use <b>/voteresume</b> or <b>/vr</b> to vote.");
+                        }
                     }
                     else
                     {
