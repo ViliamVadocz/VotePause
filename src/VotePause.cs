@@ -21,7 +21,8 @@ public class VotePause
     private static Dictionary<ulong, DateTime> resumeVotes = [];
     private static DateTime lastPauseVoteReminder = DateTime.MinValue;
     private static DateTime lastResumeVoteReminder = DateTime.MinValue;
-    private static DateTime lastVotePassedTime = DateTime.MinValue;
+    private static DateTime lastPausePassed = DateTime.MinValue;
+    private static DateTime lastResumePassed = DateTime.MinValue;
 
     private static uint PlayersNeeded(uint totalPlayers)
     {
@@ -68,23 +69,6 @@ public class VotePause
             ulong clientId = (ulong)message["clientId"];
             DateTime now = DateTime.UtcNow;
 
-            // Debounce to avoid chat spam when someone votes after a vote has already passed.
-            if (now.Subtract(lastVotePassedTime).Seconds <= DEBOUNCE_SECONDS)
-            {
-                switch (command)
-                {
-                    case "/vp":
-                    case "/votepause":
-                    case "/vr":
-                    case "/voteresume":
-                        Mod.LogDebug($"ClientID {clientId} tried to vote, but a vote passed recently so we ignore it.");
-                        sendMessage(uiChat, $"A vote passed just now, try again in a couple seconds.", clientId);
-                        return;
-                    default:
-                        break;
-                }
-            }
-
             switch (command)
             {
                 case "/help":
@@ -93,6 +77,12 @@ public class VotePause
                 case "/votepause":
                 case "/vp":
                     Mod.LogDebug($"ClientID {clientId} voted to pause at {now}.");
+                    if (now.Subtract(lastPausePassed).Seconds <= DEBOUNCE_SECONDS)
+                    {
+                        Mod.LogDebug($"ClientID {clientId} tried pause, but we paused recently.");
+                        sendMessage(uiChat, $"A <b>pause</b> vote passed just now, try again in a couple seconds.", clientId);
+                        return;
+                    }
                     pauseVotes = pauseVotes
                         .Where(pair => now.Subtract(pair.Value).Seconds < TIMEOUT_SECONDS)
                         .ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -105,7 +95,7 @@ public class VotePause
                         gameManager.Server_Pause();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
-                        lastVotePassedTime = now;
+                        lastPausePassed = now;
                     }
                     else if (!alreadyVotedPause)
                     {
@@ -122,8 +112,15 @@ public class VotePause
                         sendMessage(uiChat, $"You already voted to <b>pause</b>.", clientId);
                     }
                     break;
+
                 case "/voteresume":
                 case "/vr":
+                    if (now.Subtract(lastResumePassed).Seconds <= DEBOUNCE_SECONDS)
+                    {
+                        Mod.LogDebug($"ClientID {clientId} tried to resume, but we resumed recently.");
+                        sendMessage(uiChat, $"A <b>resume</b> vote passed just now, try again in a couple seconds.", clientId);
+                        return;
+                    }
                     Mod.LogDebug($"ClientID {clientId} voted to resume at {now}.");
                     resumeVotes = resumeVotes
                         .Where(pair => now.Subtract(pair.Value).Seconds < TIMEOUT_SECONDS)
@@ -137,7 +134,7 @@ public class VotePause
                         gameManager.Server_Resume();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
-                        lastVotePassedTime = now;
+                        lastResumePassed = now;
                     }
                     else if (!alreadyVotedResume)
                     {
