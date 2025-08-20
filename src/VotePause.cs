@@ -16,10 +16,12 @@ public class VotePause
 
     private const uint TIMEOUT_SECONDS = 60;
     private const uint REMINDER_SECONDS = 3 * 60;
+    private const uint DEBOUNCE_SECONDS = 5;
     private static Dictionary<ulong, DateTime> pauseVotes = [];
     private static Dictionary<ulong, DateTime> resumeVotes = [];
     private static DateTime lastPauseVoteReminder = DateTime.MinValue;
     private static DateTime lastResumeVoteReminder = DateTime.MinValue;
+    private static DateTime lastVotePassedTime = DateTime.MinValue;
 
     private static uint PlayersNeeded(uint totalPlayers)
     {
@@ -66,6 +68,23 @@ public class VotePause
             ulong clientId = (ulong)message["clientId"];
             DateTime now = DateTime.UtcNow;
 
+            // Debounce to avoid chat spam when someone votes after a vote has already passed.
+            if (now.Subtract(lastVotePassedTime).Seconds <= DEBOUNCE_SECONDS)
+            {
+                switch (command)
+                {
+                    case "/vp":
+                    case "/votepause":
+                    case "/vr":
+                    case "/voteresume":
+                        Mod.LogDebug($"ClientID {clientId} tried to vote, but a vote passed recently so we ignore it.");
+                        sendMessage(uiChat, $"A vote passed just now, try again in a couple seconds.", clientId);
+                        return;
+                    default:
+                        break;
+                }
+            }
+
             switch (command)
             {
                 case "/help":
@@ -86,6 +105,7 @@ public class VotePause
                         gameManager.Server_Pause();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
+                        lastVotePassedTime = now;
                     }
                     else if (!alreadyVotedPause)
                     {
@@ -117,6 +137,7 @@ public class VotePause
                         gameManager.Server_Resume();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
+                        lastVotePassedTime = now;
                     }
                     else if (!alreadyVotedResume)
                     {
