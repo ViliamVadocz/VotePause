@@ -99,7 +99,7 @@ public class VotePause
                     else
                     {
                         Mod.LogDebug($"{clientId} tried to vote to pause but they already voted recently.");
-                        sendMessage(uiChat, $" You already voted to <b>pause</b> recently.", clientId);
+                        sendMessage(uiChat, $"You already voted to <b>pause</b>.", clientId);
                     }
                     break;
                 case "/voteresume":
@@ -131,7 +131,7 @@ public class VotePause
                     else
                     {
                         Mod.LogDebug($"{clientId} tried to vote to resume but they already voted recently.");
-                        sendMessage(uiChat, $" You already voted to <b>resume</b> recently.", clientId);
+                        sendMessage(uiChat, $"You already voted to <b>resume</b>.", clientId);
                     }
                     break;
                 default: return;
