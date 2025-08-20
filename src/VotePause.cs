@@ -91,7 +91,7 @@ public class VotePause
                     if (pauseVotes.Count >= needed)
                     {
                         Mod.LogDebug($"Vote to pause passed. [{pauseVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $" Vote passed - pausing! ({pauseVotes.Count}/{needed})");
+                        sendMessage(uiChat, $"Vote passed - pausing! ({pauseVotes.Count}/{needed})");
                         gameManager.Server_Pause();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
@@ -130,7 +130,7 @@ public class VotePause
                     if (resumeVotes.Count >= needed)
                     {
                         Mod.LogDebug($"Vote to resume passed. [{resumeVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $" Vote passed - resuming! ({resumeVotes.Count}/{needed})");
+                        sendMessage(uiChat, $"Vote passed - resuming! ({resumeVotes.Count}/{needed})");
                         gameManager.Server_Resume();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
