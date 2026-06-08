@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 
 namespace VotePause;
@@ -29,20 +28,18 @@ public class VotePause
         return (totalPlayers + 1) / 2;
     }
 
-    private static void sendMessage(UIChat uiChat, object message)
+    private static void sendMessage(ChatManager chatManager, object message)
     {
-        uiChat.Server_SendSystemChatMessage($"{MESSAGE_PREFIX} {message}");
+        chatManager.Server_BroadcastChatMessage($"{MESSAGE_PREFIX} {message}");
     }
-    private static void sendMessage(UIChat uiChat, object message, ulong clientId)
+    private static void sendMessage(ChatManager chatManager, object message, ulong clientId)
     {
-        uiChat.Server_SendSystemChatMessage($"{MESSAGE_PREFIX} {message}", clientId);
+        chatManager.Server_SendChatMessage($"{MESSAGE_PREFIX} {message}", null, [clientId]);
     }
 
-    [HarmonyPatch(typeof(UIChatController), "Event_Server_OnChatCommand")]
+    [HarmonyPatch(typeof(BaseGameMode<BaseGameModeConfig>), "Event_Server_OnChatCommand")]
     public static class UIChatControllerEventServerOnChatCommandPatch
     {
-        static readonly FieldInfo _uiChat = typeof(UIChatController).GetField("uiChat", BindingFlags.Instance | BindingFlags.NonPublic);
-
         [HarmonyPrefix]
         public static void Event_Server_OnChatCommand(
             UIChatController __instance,
@@ -54,13 +51,13 @@ public class VotePause
             if (!message.ContainsKey("command")) return;
             if (!message.ContainsKey("clientId")) return;
 
-            PlayerManager playerManager = NetworkBehaviourSingleton<PlayerManager>.Instance;
+            PlayerManager playerManager = MonoBehaviourSingleton<PlayerManager>.Instance;
             GameManager gameManager = NetworkBehaviourSingleton<GameManager>.Instance;
-            UIChat uiChat = (UIChat)_uiChat.GetValue(__instance);
+            ChatManager chatManager = NetworkBehaviourSingleton<ChatManager>.Instance;
 
             if (playerManager == null) return;
             if (gameManager == null) return;
-            if (uiChat == null) return;
+            if (chatManager == null) return;
 
             uint totalPlayers = (uint)playerManager.GetPlayers(false).Count;
             uint needed = PlayersNeeded(totalPlayers);
@@ -72,7 +69,7 @@ public class VotePause
             switch (command)
             {
                 case "/help":
-                    sendMessage(uiChat, HELP_MESSAGE, clientId);
+                    sendMessage(chatManager, HELP_MESSAGE, clientId);
                     break;
                 case "/votepause":
                 case "/vp":
@@ -80,7 +77,7 @@ public class VotePause
                     if (now.Subtract(lastPausePassed).Seconds <= DEBOUNCE_SECONDS)
                     {
                         Mod.LogDebug($"ClientID {clientId} tried pause, but we paused recently.");
-                        sendMessage(uiChat, $"A vote passed recently. Try again in a couple seconds.", clientId);
+                        sendMessage(chatManager, $"A vote passed recently. Try again in a couple seconds.", clientId);
                         return;
                     }
                     pauseVotes = pauseVotes
@@ -91,25 +88,25 @@ public class VotePause
                     if (pauseVotes.Count >= needed)
                     {
                         Mod.LogDebug($"Vote to pause passed. [{pauseVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $"Vote passed - <b>pausing</b>! ({pauseVotes.Count}/{needed})");
-                        gameManager.Server_Pause();
+                        sendMessage(chatManager, $"Vote passed - <b>pausing</b>! ({pauseVotes.Count}/{needed})");
+                        gameManager.Server_StopTicking();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
                         lastPausePassed = now;
                     }
                     else if (!alreadyVotedPause)
                     {
-                        sendMessage(uiChat, $"Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed}).");
+                        sendMessage(chatManager, $"Vote to <b>pause</b> in progress ({pauseVotes.Count}/{needed}).");
                         if (now.Subtract(lastPauseVoteReminder).Seconds > REMINDER_SECONDS)
                         {
                             lastPauseVoteReminder = now;
-                            sendMessage(uiChat, $"Use <b>/votepause</b> or <b>/vp</b> to vote.");
+                            sendMessage(chatManager, $"Use <b>/votepause</b> or <b>/vp</b> to vote.");
                         }
                     }
                     else
                     {
                         Mod.LogDebug($"{clientId} tried to vote to pause but they already voted recently.");
-                        sendMessage(uiChat, $"You already voted to <b>pause</b>.", clientId);
+                        sendMessage(chatManager, $"You already voted to <b>pause</b>.", clientId);
                     }
                     break;
 
@@ -118,7 +115,7 @@ public class VotePause
                     if (now.Subtract(lastResumePassed).Seconds <= DEBOUNCE_SECONDS)
                     {
                         Mod.LogDebug($"ClientID {clientId} tried to resume, but we resumed recently.");
-                        sendMessage(uiChat, $"A vote passed recently. Try again in a couple seconds.", clientId);
+                        sendMessage(chatManager, $"A vote passed recently. Try again in a couple seconds.", clientId);
                         return;
                     }
                     Mod.LogDebug($"ClientID {clientId} voted to resume at {now}.");
@@ -130,8 +127,8 @@ public class VotePause
                     if (resumeVotes.Count >= needed)
                     {
                         Mod.LogDebug($"Vote to resume passed. [{resumeVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $"Vote passed - <b>resuming</b>! ({resumeVotes.Count}/{needed})");
-                        gameManager.Server_Resume();
+                        sendMessage(chatManager, $"Vote passed - <b>resuming</b>! ({resumeVotes.Count}/{needed})");
+                        gameManager.Server_StartTicking();
                         pauseVotes.Clear();
                         resumeVotes.Clear();
                         lastResumePassed = now;
@@ -139,17 +136,17 @@ public class VotePause
                     else if (!alreadyVotedResume)
                     {
                         Mod.LogDebug($"Vote to resume in progress. [{resumeVotes.Count}/{needed}]");
-                        sendMessage(uiChat, $"Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed}).");
+                        sendMessage(chatManager, $"Vote to <b>resume</b> in progress ({resumeVotes.Count}/{needed}).");
                         if (now.Subtract(lastResumeVoteReminder).Seconds > REMINDER_SECONDS)
                         {
                             lastResumeVoteReminder = now;
-                            sendMessage(uiChat, $"Use <b>/voteresume</b> or <b>/vr</b> to vote.");
+                            sendMessage(chatManager, $"Use <b>/voteresume</b> or <b>/vr</b> to vote.");
                         }
                     }
                     else
                     {
                         Mod.LogDebug($"{clientId} tried to vote to resume but they already voted recently.");
-                        sendMessage(uiChat, $"You already voted to <b>resume</b>.", clientId);
+                        sendMessage(chatManager, $"You already voted to <b>resume</b>.", clientId);
                     }
                     break;
                 default: return;

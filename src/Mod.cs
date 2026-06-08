@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 namespace VotePause;
 
-public class Mod : IPuckMod
+public class Mod : IPuckPlugin
 {
     public const string NAME = "VotePause";
     public const string GUID = $"0x57696c6c.{NAME}";
