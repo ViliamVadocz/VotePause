@@ -41,23 +41,23 @@ public class VotePause
     public static class UIChatControllerEventServerOnChatCommandPatch
     {
         [HarmonyPrefix]
-        public static void Event_Server_OnChatCommand(
+        public static bool Event_Server_OnChatCommand(
             UIChatController __instance,
             Dictionary<string, object> message
         )
         {
-            if (__instance == null) return;
-            if (message == null) return;
-            if (!message.ContainsKey("command")) return;
-            if (!message.ContainsKey("clientId")) return;
+            if (__instance == null) return true;
+            if (message == null) return true;
+            if (!message.ContainsKey("command")) return true;
+            if (!message.ContainsKey("clientId")) return true;
 
             PlayerManager playerManager = MonoBehaviourSingleton<PlayerManager>.Instance;
             GameManager gameManager = NetworkBehaviourSingleton<GameManager>.Instance;
             ChatManager chatManager = NetworkBehaviourSingleton<ChatManager>.Instance;
 
-            if (playerManager == null) return;
-            if (gameManager == null) return;
-            if (chatManager == null) return;
+            if (playerManager == null) return true;
+            if (gameManager == null) return true;
+            if (chatManager == null) return true;
 
             uint totalPlayers = (uint)playerManager.GetPlayers(false).Count;
             uint needed = PlayersNeeded(totalPlayers);
@@ -70,7 +70,7 @@ public class VotePause
             {
                 case "/help":
                     sendMessage(chatManager, HELP_MESSAGE, clientId);
-                    break;
+                    return false;
                 case "/votepause":
                 case "/vp":
                     Mod.LogDebug($"ClientID {clientId} voted to pause at {now}.");
@@ -78,7 +78,7 @@ public class VotePause
                     {
                         Mod.LogDebug($"ClientID {clientId} tried pause, but we paused recently.");
                         sendMessage(chatManager, $"A vote passed recently. Try again in a couple seconds.", clientId);
-                        return;
+                        return false;
                     }
                     pauseVotes = pauseVotes
                         .Where(pair => now.Subtract(pair.Value).Seconds < TIMEOUT_SECONDS)
@@ -108,7 +108,7 @@ public class VotePause
                         Mod.LogDebug($"{clientId} tried to vote to pause but they already voted recently.");
                         sendMessage(chatManager, $"You already voted to <b>pause</b>.", clientId);
                     }
-                    break;
+                    return false;
 
                 case "/voteresume":
                 case "/vr":
@@ -116,7 +116,7 @@ public class VotePause
                     {
                         Mod.LogDebug($"ClientID {clientId} tried to resume, but we resumed recently.");
                         sendMessage(chatManager, $"A vote passed recently. Try again in a couple seconds.", clientId);
-                        return;
+                        return false;
                     }
                     Mod.LogDebug($"ClientID {clientId} voted to resume at {now}.");
                     resumeVotes = resumeVotes
@@ -148,8 +148,8 @@ public class VotePause
                         Mod.LogDebug($"{clientId} tried to vote to resume but they already voted recently.");
                         sendMessage(chatManager, $"You already voted to <b>resume</b>.", clientId);
                     }
-                    break;
-                default: return;
+                    return false;
+                default: return true;
             }
         }
     }
