@@ -8,7 +8,7 @@ public class Mod : IPuckPlugin
 {
     public const string NAME = "VotePause";
     public const string GUID = $"0x57696c6c.{NAME}";
-    public const string VERSION = "3.0.0";
+    public const string VERSION = "3.0.1";
 
     private readonly Harmony harmony = new Harmony(GUID);
 
