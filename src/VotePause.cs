@@ -38,7 +38,7 @@ public class VotePause
     }
 
     [HarmonyPatch(typeof(BaseGameMode<BaseGameModeConfig>), "Event_Server_OnChatCommand")]
-    public static class UIChatControllerEventServerOnChatCommandPatch
+    public static class BaseGameModeEventServerOnChatCommandPatch
     {
         [HarmonyPrefix]
         public static bool Event_Server_OnChatCommand(
@@ -70,7 +70,7 @@ public class VotePause
             {
                 case "/help":
                     sendMessage(chatManager, HELP_MESSAGE, clientId);
-                    return false;
+                    return true;
                 case "/votepause":
                 case "/vp":
                     Mod.LogDebug($"ClientID {clientId} voted to pause at {now}.");
